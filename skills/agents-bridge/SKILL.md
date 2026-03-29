@@ -1,11 +1,19 @@
-# AI CLI Quick Reference
+---
+name: agents-bridge
+description: Invoke Claude Code, OpenAI Codex, or Google Gemini CLI to delegate tasks to other AI agents. Use this skill whenever the user wants to call another AI CLI, send a prompt to a different model, compare outputs across agents, resume a session with another agent, or bridge work between multiple AI coding assistants.
+---
 
-A quick reference for invoking Claude Code, OpenAI Codex, and Google Gemini from the command line.
+# Agents Bridge
 
-## Usage Guidelines
+Delegate tasks to Claude Code, OpenAI Codex, or Google Gemini CLI from within this session.
 
-- **Long output must go through files, not chat messages.** If the CLI output or your response would be long, write it to a file and tell the user the file path — do not paste walls of text into the conversation.
-- **Use session ID to resume conversations with the target CLI.** Each CLI maintains session history. When iterating on a task, always resume by session ID (not "last") so you return to the exact conversation. Record the session ID from the initial run output.
+## Workflow
+
+1. **Pick the target CLI** based on the user's request (claude, codex, or gemini).
+2. **Build the command** using the reference below. Always use non-interactive mode (`-p` / `exec` / `-p`).
+3. **Long messages go through files.** Write the prompt to a temp file and pipe it in, or use `-o <path>` to capture the output. Never paste walls of text into the conversation — give the user a file path instead.
+4. **Record the session ID** from the CLI's output. When the user wants to continue the conversation, resume by that exact session ID — not by "last" or "latest".
+5. **Report back** to the user: summarize what happened, give them the output file path, and note the session ID for future resume.
 
 ---
 
