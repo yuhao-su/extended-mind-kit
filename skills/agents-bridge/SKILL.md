@@ -11,7 +11,7 @@ Delegate tasks to Claude Code, OpenAI Codex, or Google Gemini CLI from within th
 
 1. **Pick the target CLI** based on the user's request (claude, codex, or gemini).
 2. **Build the command** using the reference below. Always use non-interactive mode (`-p` / `exec` / `-p`).
-3. **Long messages go through files.** Write the prompt to a temp file and pipe it in, or use `-o <path>` to capture the output. Never paste walls of text into the conversation — give the user a file path instead.
+3. **Long messages go through files.** Write the prompt to a temp file and pipe it in, or redirect output to a file. Never paste walls of text into the conversation — give the user a file path instead.
 4. **Record the session ID** from the CLI's output. When the user wants to continue the conversation, resume by that exact session ID — not by "last" or "latest".
 5. **Report back** to the user: summarize what happened, give them the output file path, and note the session ID for future resume.
 
@@ -56,13 +56,13 @@ First run: `codex login`
 | Task | Command |
 |------|---------|
 | Interactive | `codex` |
-| One-shot (last message only) | `codex exec -o <path> "your prompt"` |
-| Pipe input | `echo "explain" \| codex exec -o <path> -` |
+| One-shot (stdout only) | `codex exec "your prompt" 2>/dev/null` |
+| Pipe input | `echo "explain" \| codex exec - 2>/dev/null` |
 | Select model | `codex -m gpt-5.4` / `codex -m gpt-5.4-mini` / `codex -m gpt-5.3-codex` |
 | Thinking effort | `codex -c model_reasoning_effort='"high"' "prompt"` |
-| Resume specific session | `codex exec resume <session-id> -o <path>` |
+| Resume specific session | `codex exec resume <session-id> 2>/dev/null` |
 
-> **Note:** Always use `-o <file>` with `codex exec` (including resume) to capture only the final message. Without it, `exec` prints all intermediate steps which can be very noisy.
+> **Note:** Append `2>/dev/null` to `codex exec` to suppress intermediate steps and keep only the final output on stdout.
 
 **Key flags:**
 
@@ -75,7 +75,6 @@ First run: `codex login`
 -C, --cd <dir>                  Set working directory
 -i, --image <file>              Attach image (repeatable)
 --search                        Enable web search
--o, --output-last-message <f>   Write final message to file
 --json                          JSONL output (with exec)
 ```
 
@@ -132,7 +131,7 @@ First run authenticates via Google OAuth (free tier: 60 req/min, 1000 req/day).
 
 ```bash
 claude -p "explain the main function in src/index.ts"
-codex exec -o <path> "explain the main function in src/index.ts"
+codex exec "explain the main function in src/index.ts" 2>/dev/null
 gemini -p "explain the main function in src/index.ts"
 ```
 
@@ -140,7 +139,7 @@ gemini -p "explain the main function in src/index.ts"
 
 ```bash
 git diff | claude -p "review this diff"
-git diff | codex exec -o <path> "review this diff"
+git diff | codex exec "review this diff" 2>/dev/null
 git diff | gemini -p "review this diff"
 ```
 
@@ -148,6 +147,6 @@ git diff | gemini -p "review this diff"
 
 ```bash
 claude --resume <session-id>           # Claude: resume by session ID
-codex exec resume <session-id> -o <path>  # Codex: resume by session ID
+codex exec resume <session-id> 2>/dev/null  # Codex: resume by session ID
 gemini -r <session-id>                 # Gemini: resume by session ID
 ```
